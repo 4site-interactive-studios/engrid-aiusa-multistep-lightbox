@@ -6,6 +6,10 @@ export class DonationLightbox {
     this.defaultOptions = {
       image: "",
       logo: "",
+      logo_position_top: "0px",
+      logo_position_left: "0px",
+      logo_position_right: "unset",
+      logo_position_bottom: "unset",
       title: "",
       paragraph: "",
       footer: "",
@@ -68,6 +72,18 @@ export class DonationLightbox {
     }
     if ("form_color" in data) {
       this.options.form_color = data.form_color;
+    }
+    if ("logo_position_top" in data) {
+      this.options.logo_position_top = data.logo_position_top;
+    }
+    if ("logo_position_left" in data) {
+      this.options.logo_position_left = data.logo_position_left;
+    }
+    if ("logo_position_right" in data) {
+      this.options.logo_position_right = data.logo_position_right;
+    }
+    if ("logo_position_bottom" in data) {
+      this.options.logo_position_bottom = data.logo_position_bottom;
     }
   }
   init() {
@@ -141,8 +157,10 @@ export class DonationLightbox {
       // Get clicked element
       let element = event.target;
       this.loadOptions(element);
+      this.context = 'object';
       href = new URL(element.href);
     } else {
+      this.context = 'default';
       href = new URL(event);
     }
     // Delete overlay if exists
@@ -170,7 +188,7 @@ export class DonationLightbox {
           }; color: ${this.options.txt_color}">
             ${
               this.options.logo
-                ? `<img class="dl-logo" src="${this.options.logo}" alt="${this.options.title}">`
+                ? `<img class="dl-logo" src="${this.options.logo}" alt="${this.options.title}" style="top: ${this.options.logo_position_top}; left: ${this.options.logo_position_left}; bottom: ${this.options.logo_position_bottom}; right: ${this.options.logo_position_right};">`
                 : ""
             }
             <div class="dl-container">
@@ -248,10 +266,12 @@ export class DonationLightbox {
     if (this.options.url) {
       this.setCookie(this.options.cookie_hours);
     }
+
+    let event = new CustomEvent("multistep-lightbox", { detail: { id: this.overlayID, action: 'closed', context: this.context }} );
+    document.dispatchEvent(event);
   }
   // Receive a message from the child iframe
   receiveMessage(event) {
-    console.log("DonationLightbox: receiveMessage: event: ", event);
     const message = event.data;
     if (message.key === "status") {
       this.status(message.value, event);
