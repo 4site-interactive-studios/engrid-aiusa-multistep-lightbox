@@ -188,7 +188,7 @@ export class DonationLightbox {
               <div class="dl-celebration">
                 <div class="frame frame1">
                     <h3>THANK YOU,</h3>
-                    <h2 class="name">Fernando!</h2>
+                    <h2 class="name">Friend!</h2>
                 </div>
               </div>
             </div>
@@ -201,7 +201,7 @@ export class DonationLightbox {
                 <div class="double-bounce2"></div>
               </div>
             </div>
-            <iframe allow="payment" loading='lazy' id='dl-iframe' width='100%' scrolling='no' class='dl-iframe' src='${href}' frameborder='0' allowfullscreen></iframe>
+            <iframe allow="payment" loading='lazy' id='aiusa-lightbox-iframe' width='100%' scrolling='no' class='aiusa-lightbox-iframe' src='${href}' frameborder='0' allowfullscreen></iframe>
           </div>
         </div>
         <div class="dl-footer">
@@ -251,6 +251,7 @@ export class DonationLightbox {
   }
   // Receive a message from the child iframe
   receiveMessage(event) {
+    if (!this.overlay) return;
     console.log("DonationLightbox: receiveMessage: event: ", event);
     const message = event.data;
     if (message.key === "status") {
@@ -273,7 +274,7 @@ export class DonationLightbox {
     }
     if (message.key === "firstname") {
       const firstname = message.value;
-      const nameHeading = document.querySelector(".dl-celebration h2.name");
+      const nameHeading = this.overlay.querySelector(".dl-celebration h2.name");
       if (nameHeading) {
         nameHeading.innerHTML = firstname + "!";
         if (firstname.length > 12) {
@@ -283,20 +284,23 @@ export class DonationLightbox {
     }
   }
   status(status, event) {
+    if (!this.overlay) return;
     if (status === "loading") {
-      document.querySelector(".dl-loading").classList.remove("is-loaded");
+      this.overlay.querySelector(".dl-loading").classList.remove("is-loaded");
     }
     if (status === "loaded") {
-      document.querySelector(".dl-loading").classList.add("is-loaded");
+      this.overlay.querySelector(".dl-loading").classList.add("is-loaded");
     }
     if (status === "submitted") {
       this.donationinfo.frequency =
         this.donationinfo.frequency == "no" ? "" : this.donationinfo.frequency;
-      let iFrameUrl = new URL(document.getElementById("dl-iframe").src);
+      let iFrameUrl = new URL(
+        document.getElementById("aiusa-lightbox-iframe").src
+      );
       for (const key in this.donationinfo) {
         iFrameUrl.searchParams.append(key, this.donationinfo[key]);
       }
-      document.getElementById("dl-iframe").src = iFrameUrl
+      document.getElementById("aiusa-lightbox-iframe").src = iFrameUrl
         .toString()
         .replace("/donate/1", "/donate/2");
     }
@@ -310,7 +314,7 @@ export class DonationLightbox {
   error(error, event) {
     this.shake();
     // console.error(error);
-    const container = document.querySelector(
+    const container = this.overlay.querySelector(
       ".foursiteDonationLightbox .right"
     );
     const errorMessage = document.createElement("div");
@@ -372,7 +376,7 @@ export class DonationLightbox {
       );
     }, 250);
     // Left Animation
-    const leftContainer = document.querySelector(
+    const leftContainer = this.overlay.querySelector(
       `#${this.overlayID} .dl-content .left`
     );
     if (leftContainer) {
@@ -406,70 +410,8 @@ export class DonationLightbox {
       );
     }
   }
-  startBunny() {
-    this.loadScript(
-      "https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.14/lottie.min.js",
-      () => {
-        const tl2 = gsap.timeline();
-        tl2.set([...document.querySelectorAll(".frame3 .phrase")].slice(1), {
-          right: "10000vw",
-        });
-        tl2.to(".frame2", {
-          opacity: "1",
-          duration: 1,
-          ease: "power1.inOut",
-        });
-        tl2.add(() => {
-          const anim = bodymovin.loadAnimation({
-            container: document.querySelector("#bunnyAnimation"),
-            renderer: "svg",
-            loop: false,
-            autoplay: true,
-            path: "https://000665513.codepen.website/data.json",
-          });
-          anim.addEventListener("complete", () => {
-            anim.goToAndPlay(130, true);
-            this.startSlider();
-          });
-        }, "+=0.5");
-        // Make the text grow
-        tl2.fromTo(".frame3", 1, { scale: 0 }, { scale: 1 }, "+=6.5");
-      }
-    );
-  }
-  startSlider() {
-    // return;
-    if (this.animationEnd) {
-      return;
-    }
-    let $slides = [...document.querySelectorAll(".frame3 .phrase")];
-    let currentSlide = 0;
-
-    TweenLite.set($slides.slice(1), { right: "600px" }); // Hide all but the first slide
-
-    const nextSlide = function () {
-      TweenLite.to($slides[currentSlide], 1, { right: "-600px" });
-
-      if (currentSlide < $slides.length - 1) {
-        currentSlide++;
-      } else {
-        currentSlide = 0;
-      }
-
-      TweenLite.fromTo(
-        $slides[currentSlide],
-        1,
-        { right: "600px" },
-        { right: "0px" }
-      );
-      TweenLite.delayedCall(3, nextSlide);
-    };
-    TweenLite.delayedCall(0.1, nextSlide); // Start the timer
-
-    this.animationEnd = true;
-  }
   shake() {
-    const element = document.querySelector(".dl-content");
+    const element = this.overlay.querySelector(".dl-content");
     if (element) {
       element.classList.add("shake");
       // Remove class after 1 second
