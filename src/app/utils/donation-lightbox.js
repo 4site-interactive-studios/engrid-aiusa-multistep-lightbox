@@ -90,6 +90,7 @@ export class DonationLightbox {
       typeof window.DonationLightboxOptions !== "undefined" &&
       window.DonationLightboxOptions.hasOwnProperty("url")
     ) {
+      const donationLightboxUrl = window.DonationLightboxOptions.url;
       this.loadOptions();
       const triggerType = this.getTriggerType(this.options.trigger);
       console.log("Trigger type: ", triggerType);
@@ -102,13 +103,13 @@ export class DonationLightbox {
         }
         if (triggerType === "seconds" || triggerType === false) {
           window.setTimeout(() => {
-            this.build(window.DonationLightboxOptions.url);
+            this.build(donationLightboxUrl);
           }, this.options.trigger);
         }
         if (triggerType === "exit") {
           document.body.addEventListener("mouseout", (e) => {
             if (e.clientY < 0 && !this.triggered) {
-              this.build(window.DonationLightboxOptions.url);
+              this.build(donationLightboxUrl);
               this.triggered = true;
             }
           });
