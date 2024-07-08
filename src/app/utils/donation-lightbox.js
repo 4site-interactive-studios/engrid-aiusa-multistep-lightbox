@@ -1,10 +1,11 @@
 import "./confetti";
 export class DonationLightbox {
   constructor() {
-    console.log("DonationLightbox: constructor");
+    //console.log("DonationLightbox: constructor");
     window.dataLayer = window.dataLayer || [];
     this.defaultOptions = {
       image: "",
+      video: "",
       logo: "",
       logo_position_top: "0px",
       logo_position_left: "0px",
@@ -17,6 +18,7 @@ export class DonationLightbox {
       txt_color: "#252525",
       form_color: "#252525",
       url: null,
+      view_more: false,
       cookie_hours: 24,
       cookie_name: "HideDonationLightbox",
       cookie_event: "display", // display, close
@@ -47,7 +49,7 @@ export class DonationLightbox {
     }
     // Get Data Attributes
     let data = element.dataset;
-    console.log("DonationLightbox: loadOptions: data: ", data);
+    //console.log("DonationLightbox: loadOptions: data: ", data);
     // Set Options
     if ("image" in data) {
       this.options.image = data.image;
@@ -85,9 +87,23 @@ export class DonationLightbox {
     if ("logo_position_bottom" in data) {
       this.options.logo_position_bottom = data.logo_position_bottom;
     }
+    if ("video" in data) {
+      this.options.video = data.video;
+    }
+    if ("autoplay" in data) {
+      this.options.autoplay = data.autoplay;
+    } else {
+      this.options.autoplay = false;
+    }
+    if ("divider" in data) {
+      this.options.divider = data.divider;
+    }
+    if ("view_more" in data) {
+      this.options.view_more = data.view_more === "true";
+    }
   }
   init() {
-    console.log("DonationLightbox: init");
+    //console.log("DonationLightbox: init");
     document.querySelectorAll("[data-donation-lightbox]").forEach((e) => {
       e.addEventListener(
         "click",
@@ -95,7 +111,7 @@ export class DonationLightbox {
           event.preventDefault();
           // Get clicked element
           let element = event.target;
-          console.log("DonationLightbox: init: clicked element: " + element);
+          //console.log("DonationLightbox: init: clicked element: " + element);
           this.build(event);
         },
         false
@@ -109,7 +125,7 @@ export class DonationLightbox {
       const donationLightboxUrl = window.DonationLightboxOptions.url;
       this.loadOptions();
       const triggerType = this.getTriggerType(this.options.trigger);
-      console.log("Trigger type: ", triggerType);
+      //console.log("Trigger type: ", triggerType);
       if (!this.getCookie()) {
         if (triggerType === false) {
           this.options.trigger = 2000;
@@ -152,7 +168,7 @@ export class DonationLightbox {
     }
   }
   build(event) {
-    console.log("DonationLightbox: build", typeof event);
+    //console.log("DonationLightbox: build", typeof event);
     let href = null;
     if (typeof event === "object") {
       // Get clicked element
@@ -192,18 +208,42 @@ export class DonationLightbox {
                 ? `<img class="dl-logo" src="${this.options.logo}" alt="${this.options.title}" style="top: ${this.options.logo_position_top}; left: ${this.options.logo_position_left}; bottom: ${this.options.logo_position_bottom}; right: ${this.options.logo_position_right};">`
                 : ""
             }
-            <div class="dl-container">
-              <img class="dl-hero" src="${this.options.image}" alt="${
-      this.options.title
-    }" />
+            ${
+              this.options.view_more
+                ? `
+            <a href="#" class="dl-close-viewmore" style="color: ${this.options.txt_color}; border: 1px solid ${this.options.txt_color}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
+                <path fill="currentColor" d="M7.214.786c.434-.434 1.138-.434 1.572 0 .433.434.433 1.137 0 1.571L4.57 6.572h10.172c.694 0 1.257.563 1.257 1.257s-.563 1.257-1.257 1.257H4.229l4.557 4.557c.433.434.433 1.137 0 1.571-.434.434-1.138.434-1.572 0L0 8 7.214.786z"></path>
+              </svg>
+            </a>
+            `
+                : ""
+            }
+            <div class="dl-container black-camo-background" data-view-more="${
+              this.options.view_more ? "true" : "false"
+            }">
+              ${this.loadHero()}
+              ${
+                this.options.divider
+                  ? `<img class="dl-divider" src="${this.options.divider}" alt="Divider">`
+                  : ""
+              }
               <div class="dl-container-inner">
                 <h1 class="dl-title" style="color: ${this.options.txt_color}">${
-      this.options.title
-    }</h1>
+                  this.options.title
+                }</h1>
                 <p class="dl-paragraph" style="color: ${
                   this.options.txt_color
                 }">${this.options.paragraph}</p>
+                ${
+                  this.options.view_more
+                    ? `
+                        <a class="dl-viewmore" href="#"style="color: ${this.options.txt_color}; border-color: ${this.options.txt_color}">View More</a>
+                      `
+                    : ""
+                }
               </div>
+
               <div class="dl-celebration">
                 <div class="frame frame1">
                     <h3>THANK YOU,</h3>
@@ -240,6 +280,57 @@ export class DonationLightbox {
         this.close(e);
       }
     });
+    
+    const closeViewMore = overlay.querySelector(".dl-close-viewmore");
+    if (closeViewMore) {
+      closeViewMore.addEventListener("click", (e) => {
+        e.preventDefault();
+        overlay.querySelector(".left").classList.remove("view-more");
+      });
+    }
+
+    const viewmore = overlay.querySelector(".dl-viewmore");
+    if (viewmore) {
+      viewmore.addEventListener("click", (e) => {
+        e.preventDefault();
+        overlay.querySelector(".left").classList.add("view-more");
+      });
+    }
+
+    const videoElement = overlay.querySelector("video");
+    if (videoElement) {
+      const playButton = overlay.querySelector(".btn-play");
+      const pauseButton = overlay.querySelector(".btn-pause");
+
+      if (playButton) {
+        playButton.addEventListener("click", () => {
+          videoElement.play();
+        });
+      }
+
+      if (pauseButton) {
+        pauseButton.addEventListener("click", () => {
+          videoElement.pause();
+        });
+      }
+
+      videoElement.addEventListener("play", (event) => {
+        overlay.querySelector(".dl-container").classList.add("playing");
+        overlay.querySelector(".dl-container").classList.remove("paused");
+      });
+
+      videoElement.addEventListener("pause", (event) => {
+        overlay.querySelector(".dl-container").classList.remove("playing");
+        overlay.querySelector(".dl-container").classList.add("paused");
+      });
+
+      videoElement.addEventListener("ended", (event) => {
+        overlay.querySelector(".dl-container").classList.remove("playing");
+        overlay.querySelector(".dl-container").classList.remove("paused");
+        videoElement.load();
+      });
+    }
+
     document.addEventListener("keyup", (e) => {
       if (e.key === "Escape") {
         closeButton.click();
@@ -268,13 +359,18 @@ export class DonationLightbox {
       this.setCookie(this.options.cookie_hours);
     }
 
+    const videoElement = this.overlay.querySelector("video");
+    if (videoElement) {
+      videoElement.pause();
+    }
+
     let event = new CustomEvent("multistep-lightbox", { detail: { id: this.overlayID, action: 'closed', context: this.context }} );
     document.dispatchEvent(event);
   }
   // Receive a message from the child iframe
   receiveMessage(event) {
     if (!this.overlay) return;
-    console.log("DonationLightbox: receiveMessage: event: ", event);
+    //console.log("DonationLightbox: receiveMessage: event: ", event);
     const message = event.data;
     if (message.key === "status") {
       this.status(message.value, event);
@@ -289,10 +385,7 @@ export class DonationLightbox {
     }
     if (message.key === "donationinfo") {
       this.donationinfo = JSON.parse(message.value);
-      console.log(
-        "DonationLightbox: receiveMessage: donationinfo: ",
-        this.donationinfo
-      );
+      //console.log("DonationLightbox: receiveMessage: donationinfo: ", this.donationinfo);
     }
     if (message.key === "firstname") {
       const firstname = message.value;
@@ -361,6 +454,11 @@ export class DonationLightbox {
     }, 300);
   }
   celebrate() {
+    const videoElement = this.overlay.querySelector("video");
+    if (videoElement) {
+      videoElement.pause();
+    }
+
     const duration = 5 * 1000;
     const animationEnd = Date.now() + duration;
     const defaults = {
@@ -482,7 +580,7 @@ export class DonationLightbox {
      * The word exit -> Triggers the lightbox when the mouse leaves the DOM area (exit intent).
      * With 0 as default, the lightbox will trigger as soon as the page finishes loading.
      */
-    console.log("Trigger Value: ", trigger);
+    //console.log("Trigger Value: ", trigger);
 
     if (!isNaN(trigger)) {
       return "seconds";
@@ -512,5 +610,31 @@ export class DonationLightbox {
       this.build(window.DonationLightboxOptions.url);
       this.triggered = true;
     }
+  }
+  loadHero() {
+    if (!this.options.video) {
+      return `<img class="dl-hero" src="${this.options.image}" alt="${this.options.title}" />`;
+    }
+    const autoplay = this.options.autoplay || false;
+    let markup = autoplay
+      ? `<video autoplay muted loop playsinline`
+      : `<video playsinline`;
+    markup += ` poster="${this.options.image}">`;
+    markup += `<source src="${this.options.video}" type="video/mp4">`;
+    markup += `</video>`;
+    return `<div class="dl-hero">
+    ${markup}
+    ${
+      !autoplay
+        ? `<div class="btn-play">
+              <svg class="play-svg" xmlns="http://www.w3.org/2000/svg" width="26" height="31" viewBox="0 0 55.127 61.182"><g id="Group_38215" data-name="Group 38215" transform="translate(30 35)" fill="currentColor"><g id="play-button-arrowhead_1_" data-name="play-button-arrowhead (1)" transform="translate(-30 -35)"><path id="Path_18" data-name="Path 18" d="M18.095,1.349C12.579-1.815,8.107.777,8.107,7.134v46.91c0,6.363,4.472,8.952,9.988,5.791l41-23.514c5.518-3.165,5.518-8.293,0-11.457Z" transform="translate(-8.107 0)"/></g></g></svg>
+            </div>
+
+            <div class="btn-pause">
+              <svg class="pause-svg" xmlns="http://www.w3.org/2000/svg" width="31" height="31" viewBox="0 0 31 31"><path d="M10 31h-6v-31h6v31zm15-31h-6v31h6v-31z" fill="currentColor" /></svg>
+            </div>`
+        : ""
+    }
+    </div>`;
   }
 }
