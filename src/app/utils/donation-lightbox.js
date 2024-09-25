@@ -26,6 +26,7 @@ export class DonationLightbox {
       gtm_open_event_name: "donation_lightbox_display",
       gtm_close_event_name: "donation_lightbox_closed",
       gtm_suppressed_event_name: "donation_lightbox_supressed",
+      raw_html: ""
     };
     this.donationinfo = {};
     this.options = { ...this.defaultOptions };
@@ -94,6 +95,9 @@ export class DonationLightbox {
       this.options.autoplay = data.autoplay;
     } else {
       this.options.autoplay = false;
+    }
+    if ("raw_html" in data) {
+      this.options.raw_html = data.raw_html;
     }
     if ("divider" in data) {
       this.options.divider = data.divider;
@@ -223,6 +227,7 @@ export class DonationLightbox {
               this.options.view_more ? "true" : "false"
             }">
               ${this.loadHero()}
+              ${this.options.raw_html ? this.options.raw_html : ""}
               ${
                 this.options.divider
                   ? `<img class="dl-divider" src="${this.options.divider}" alt="Divider">`
