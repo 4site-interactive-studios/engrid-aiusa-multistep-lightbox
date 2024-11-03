@@ -26,7 +26,8 @@ export class DonationLightbox {
       gtm_open_event_name: "donation_lightbox_display",
       gtm_close_event_name: "donation_lightbox_closed",
       gtm_suppressed_event_name: "donation_lightbox_supressed",
-      raw_html: ""
+      raw_html: "",
+      id: ""
     };
     this.donationinfo = {};
     this.options = { ...this.defaultOptions };
@@ -104,6 +105,9 @@ export class DonationLightbox {
     }
     if ("view_more" in data) {
       this.options.view_more = data.view_more === "true";
+    }
+    if ("id" in data) {
+      this.options.id = data.id;
     }
   }
   init() {
@@ -277,6 +281,7 @@ export class DonationLightbox {
     overlay.id = this.overlayID;
     overlay.classList.add("is-hidden");
     overlay.classList.add("foursiteDonationLightbox");
+    overlay.setAttribute("promotion-id", this.options.id);
     overlay.innerHTML = markup;
     const closeButton = overlay.querySelector(".dl-button-close");
     closeButton.addEventListener("click", this.close.bind(this));
