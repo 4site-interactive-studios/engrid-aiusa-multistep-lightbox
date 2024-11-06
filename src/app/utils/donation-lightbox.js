@@ -189,7 +189,7 @@ export class DonationLightbox {
       href = new URL(event);
     }
     // Delete overlay if exists
-    if (this.overlay) {
+    if (this.overlay && this.overlay.parentNode) {
       this.overlay.parentNode.removeChild(this.overlay);
     }
     this.overlayID = "foursite-" + Math.random().toString(36).substring(7);
