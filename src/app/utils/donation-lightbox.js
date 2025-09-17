@@ -27,7 +27,8 @@ export class DonationLightbox {
       gtm_close_event_name: "donation_lightbox_closed",
       gtm_suppressed_event_name: "donation_lightbox_supressed",
       raw_html: "",
-      id: ""
+      id: "",
+      image_url: ""
     };
     this.donationinfo = {};
     this.options = { ...this.defaultOptions };
@@ -108,6 +109,9 @@ export class DonationLightbox {
     }
     if ("id" in data) {
       this.options.id = data.id;
+    }
+    if ("image_url" in data) {
+      this.options.image_url = data.image_url;
     }
   }
   init() {
@@ -623,7 +627,11 @@ export class DonationLightbox {
   }
   loadHero() {
     if (!this.options.video) {
-      return `<img class="dl-hero" src="${this.options.image}" alt="${this.options.title}" />`;
+      let image_markup = `<img class="dl-hero" src="${this.options.image}" alt="${this.options.title}" />`;
+      if (this.options.image_url) {
+        image_markup = `<a href="${this.options.image_url}" target="_blank" rel="noopener"><img class="dl-hero" src="${this.options.image}" alt="${this.options.title}" /></a>`;
+      }
+      return image_markup;
     }
     const autoplay = this.options.autoplay || false;
     let markup = autoplay
